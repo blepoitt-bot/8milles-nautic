@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1a5c9a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="8 Milles Nautic">
-<link rel="apple-touch-icon" href="/Quadri.png">
+<link rel="apple-touch-icon" href="Quadri.png">
 <title>8 Milles Nautic</title>
 <script src="https://unpkg.com/@azure/msal-browser@3.10.0/lib/msal-browser.min.js"></script>
 <style>
@@ -214,7 +214,7 @@ textarea{resize:none;height:72px;}
     <div id="pin-view">
       <div class="modal-title">Code responsable</div>
       <div class="pin-screen">
-        <input class="pin-input" type="password" id="pin-input" maxlength="4" placeholder="••••" />
+        <input class="pin-input" type="password" id="pin-input" maxlength="10" placeholder="••••••••" />
         <div id="pin-error" style="font-size:12px;color:#e24b4a;display:none;">Code incorrect</div>
         <div class="modal-btns">
           <button class="btn-cancel" onclick="closePublish()">Annuler</button>
@@ -545,6 +545,21 @@ function checkPin() {
     document.getElementById('pin-view').style.display = 'none';
     document.getElementById('publish-view').style.display = 'block';
     document.getElementById('pin-error').style.display = 'none';
+    document.getElementById('pin-input').value = '';
+    // Si on était en train de modifier, pré-remplir
+    if (pendingEdit !== null) {
+      const a = actus.find(x => x.id === pendingEdit);
+      if (a) {
+        document.getElementById('actu-tag-select').value = a.tag || 'info';
+        document.getElementById('actu-base-select').value = a.base || '';
+        document.getElementById('actu-author').value = a.author;
+        document.getElementById('actu-text').value = a.text;
+        document.getElementById('actu-link').value = a.link || '';
+        if (a.img) { const p = document.getElementById('actu-img-preview'); p.src = a.img; p.style.display = 'block'; }
+        document.getElementById("modal-title").textContent = "Modifier l'actualité";
+      }
+      pendingEdit = null;
+    }
   } else {
     document.getElementById('pin-error').style.display = 'block';
   }
