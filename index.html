@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#1a5c9a">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -31,7 +31,7 @@ body{font-family:system-ui,sans-serif;background:#fff;margin:0;padding:0;height:
 .login-title{font-size:16px;font-weight:500;color:#111;}
 .login-sub{font-size:13px;color:#666;line-height:1.6;}
 .nav-tabs{display:flex;background:#fff;border-bottom:1px solid rgba(0,0,0,0.08);padding:0 12px;}
-.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;color:#666;cursor:pointer;border-bottom:2px solid transparent;}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:20px;color:#666;cursor:pointer;border-bottom:2px solid transparent;}
 .tab.active{color:#1a5c9a;border-bottom-color:#1a5c9a;font-weight:500;}
 .section{padding:12px 16px;}
 .section-label{font-size:11px;font-weight:500;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
@@ -82,10 +82,10 @@ textarea{resize:none;height:72px;}
 .btn-publish{flex:1;background:#1a5c9a;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;}
 .pin-screen{display:flex;flex-direction:column;gap:12px;}
 .pin-input{text-align:center;font-size:20px;letter-spacing:8px;}
-.bottom-nav{background:#fff;border-top:1px solid rgba(0,0,0,0.08);display:flex;padding:8px 0 12px;}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:#666;cursor:pointer;}
-.bnav-item.active{color:#1a5c9a;}
-.bnav-icon{font-size:18px;}
+
+
+
+
 .error-card{background:#fcebeb;border-radius:12px;padding:16px;font-size:13px;color:#a32d2d;margin-top:12px;line-height:1.6;}
 .open-btn{display:block;background:#1a5c9a;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;width:100%;margin-top:10px;text-align:center;text-decoration:none;}
 </style>
@@ -127,11 +127,11 @@ textarea{resize:none;height:72px;}
   <!-- APP -->
   <div id="view-app" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
     <div class="nav-tabs">
-      <div class="tab" onclick="switchTab('meteo',this)">Météo</div>
-      <div class="tab" onclick="switchTab('planning',this)">Planning</div>
-      <div class="tab active" onclick="switchTab('actus',this)">Actus</div>
-      <div class="tab" onclick="switchTab('maintenance',this)">Maintenance</div>
-      <div class="tab" onclick="switchTab('signaler',this)">Signaler</div>
+      <div class="tab" onclick="switchTab('meteo',this)">🌊</div>
+      <div class="tab" onclick="switchTab('planning',this)">📅</div>
+      <div class="tab active" onclick="switchTab('actus',this)">📢</div>
+      <div class="tab" onclick="switchTab('maintenance',this)">🔧</div>
+      <div class="tab" onclick="switchTab('signaler',this)">🚨</div>
     </div>
     <div class="screen">
 
@@ -202,17 +202,12 @@ textarea{resize:none;height:72px;}
       </div>
     </div>
 
-    <div class="bottom-nav">
-      <div class="bnav-item" onclick="switchTab('meteo',null,this)"><span class="bnav-icon">🌊</span>Météo</div>
-      <div class="bnav-item" onclick="switchTab('planning',null,this)"><span class="bnav-icon">📅</span>Planning</div>
-      <div class="bnav-item active" onclick="switchTab('actus',null,this)"><span class="bnav-icon">📢</span>Actus</div>
-      <div class="bnav-item" onclick="switchTab('maintenance',null,this)"><span class="bnav-icon">🔧</span>Maintenance</div>
-      <div class="bnav-item" onclick="switchTab('signaler',null,this)"><span class="bnav-icon">🚨</span>Signaler</div>
-    </div>
+
   </div>
 </div>
 
 <button class="fab" id="fab-btn" onclick="openPublish()">+</button>
+<button class="fab" id="edit-fab-btn" onclick="openManage()" style="display:none;bottom:140px;background:#0f6e56;">✏️</button>
 
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal">
@@ -230,15 +225,24 @@ textarea{resize:none;height:72px;}
     <div id="publish-view" style="display:none;">
       <div class="modal-title" id="modal-title">Nouvelle actualité</div>
       <select id="actu-tag-select">
-        <option value="info">📋 Info générale</option>
+        <option value="info">📋 Info</option>
         <option value="urgent">🚨 Urgent</option>
-        <option value="event">📅 Événement</option>
-        <option value="meteo">🌊 Météo / Conditions</option>
+        <option value="planning">📅 Planning</option>
+        <option value="orga">🗂️ Organisation</option>
+      </select>
+      <select id="actu-base-select">
+        <option value="">Toutes les bases</option>
+        <option value="granville">📍 Granville</option>
+        <option value="breville">📍 Bréville</option>
+        <option value="brehal">📍 Bréhal</option>
+        <option value="jullouville">📍 Jullouville</option>
       </select>
       <input type="text" id="actu-author" placeholder="Ton prénom" />
       <textarea id="actu-text" placeholder="Message..."></textarea>
       <input type="text" id="actu-link" placeholder="Lien (optionnel)" />
-      <input type="text" id="actu-img-url" placeholder="URL image (optionnel)" />
+      <label class="field-label">Image (optionnel)</label>
+      <input type="file" id="actu-img-file" accept="image/*" style="background:#f5f5f3;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:8px 12px;font-size:13px;width:100%;" />
+      <img id="actu-img-preview" style="width:100%;border-radius:8px;display:none;margin-top:4px;max-height:120px;object-fit:cover;" />
       <select id="actu-duration">
         <option value="1">Expire dans 1 jour</option>
         <option value="7" selected>Expire dans 7 jours</option>
@@ -445,16 +449,20 @@ function selectBase(key, el) {
 }
 
 // ─── ACTUS ─────────────────────────────────────────────────
-const PIN = "1234"; // À changer !
+const PIN = "resp8mn"; // À changer !
 const ACTU_FILE_PATH = "Général/Plannings activités et équipes/actualites.json";
 let actus = [];
 let pinValidated = false;
 
 const TAG_STYLES = {
-  info:   {bg:"#e6f1fb", color:"#185fa5", label:"Info"},
-  urgent: {bg:"#fcebeb", color:"#a32d2d", label:"Urgent"},
-  event:  {bg:"#eeedfe", color:"#534ab7", label:"Événement"},
-  meteo:  {bg:"#e1f5ee", color:"#0f6e56", label:"Météo"},
+  info:    {bg:"#e6f1fb", color:"#185fa5", label:"📋 Info"},
+  urgent:  {bg:"#fcebeb", color:"#a32d2d", label:"🚨 Urgent"},
+  planning:{bg:"#eeedfe", color:"#534ab7", label:"📅 Planning"},
+  orga:    {bg:"#faeeda", color:"#854f0b", label:"🗂️ Organisation"},
+};
+
+const BASE_LABELS = {
+  granville:"Granville", breville:"Bréville", brehal:"Bréhal", jullouville:"Jullouville"
 };
 
 async function loadActus() {
@@ -495,7 +503,10 @@ function renderActus() {
       ${a.img ? `<img class="actu-img" src="${a.img}" alt=""/>` : ''}
       <div class="actu-text">${a.text}</div>
       ${a.link ? `<a class="actu-link" href="${a.link}" target="_blank">🔗 ${a.link}</a>` : ''}
-      <div style="font-size:10px;color:#bbb;margin-top:6px;">${expText}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:6px;display:flex;justify-content:space-between;">
+        <span>${expText}</span>
+        ${a.base ? `<span>📍 ${BASE_LABELS[a.base] || a.base}</span>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -541,6 +552,16 @@ function checkPin() {
 
 let editingId = null;
 
+async function getImgBase64() {
+  const file = document.getElementById('actu-img-file').files[0];
+  if (!file) return '';
+  return new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.readAsDataURL(file);
+  });
+}
+
 async function publishActu() {
   const text = document.getElementById('actu-text').value.trim();
   const author = document.getElementById('actu-author').value.trim();
@@ -554,14 +575,15 @@ async function publishActu() {
     exp.setDate(exp.getDate() + days);
     expiry = exp.toISOString();
   }
+  const imgData = await getImgBase64();
+  const base = document.getElementById('actu-base-select').value;
   if (editingId !== null) {
     actus = actus.map(a => a.id === editingId ? {
       ...a,
       tag: document.getElementById('actu-tag-select').value,
-      author,
-      text,
+      author, text, base,
       link: document.getElementById('actu-link').value.trim(),
-      img: document.getElementById('actu-img-url').value.trim(),
+      img: imgData || a.img,
       expiry
     } : a);
     editingId = null;
@@ -569,18 +591,32 @@ async function publishActu() {
     actus.push({
       id: Date.now(),
       tag: document.getElementById('actu-tag-select').value,
-      author, text,
+      author, text, base,
       link: document.getElementById('actu-link').value.trim(),
-      img: document.getElementById('actu-img-url').value.trim(),
+      img: imgData,
       date, expiry
     });
   }
   await saveActus();
   renderActus();
   closePublish();
-  ['actu-text','actu-author','actu-link','actu-img-url'].forEach(id => document.getElementById(id).value = '');
+  ['actu-text','actu-author','actu-link'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('actu-img-file').value = '';
+  document.getElementById('actu-img-preview').style.display = 'none';
   document.getElementById('modal-title').textContent = 'Nouvelle actualité';
 }
+
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'actu-img-file') {
+    const file = e.target.files[0];
+    const preview = document.getElementById('actu-img-preview');
+    if (file) {
+      const r = new FileReader();
+      r.onload = ev => { preview.src = ev.target.result; preview.style.display = 'block'; };
+      r.readAsDataURL(file);
+    } else { preview.style.display = 'none'; }
+  }
+});
 
 function deleteActu(id) {
   if (!confirm("Supprimer cette actualité ?")) return;
@@ -610,23 +646,16 @@ function handleSubmit() {
   setTimeout(()=>msg.style.display='none',3000);
 }
 
-function switchTab(tab,tabEl,navEl) {
+function switchTab(tab, tabEl) {
   const fab = document.getElementById('fab-btn');
   if (fab) fab.style.display = tab === 'actus' ? 'flex' : 'none';
   if (tab === 'actus') loadActus();
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
-  if(tabEl) tabEl.classList.add('active');
-  if(navEl) navEl.classList.add('active');
-  if(!tabEl&&!navEl){
-    const idx=['planning','maintenance','signaler'].indexOf(tab);
-    document.querySelectorAll('.tab')[idx]?.classList.add('active');
-    document.querySelectorAll('.bnav-item')[idx]?.classList.add('active');
-  }
-  ['meteo','planning','actus','maintenance','signaler'].forEach(v=>{
-    const el=document.getElementById('tab-'+v); if(el) el.style.display=v===tab?'block':'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  ['meteo','planning','actus','maintenance','signaler'].forEach(v => {
+    const el = document.getElementById('tab-'+v); if(el) el.style.display = v===tab ? 'block' : 'none';
   });
-  if(tab==='maintenance') renderTasks();
+  if (tab === 'maintenance') renderTasks();
 }
 </script>
 </body>
