@@ -1,0 +1,22 @@
+{
+  "name": "8 Milles Nautic",
+  "short_name": "8 Milles",
+  "description": "Planning et outils pour les moniteurs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a5c9a",
+  "theme_color": "#1a5c9a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "Quadri.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "Quadri.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

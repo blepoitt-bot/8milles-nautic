@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a5c9a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="8 Milles Nautic">
+<link rel="apple-touch-icon" href="/Quadri.png">
+<title>8 Milles Nautic</title>
+<script src="https://unpkg.com/@azure/msal-browser@3.10.0/lib/msal-browser.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#fff;margin:0;padding:0;height:100vh;overflow:hidden;}
+.phone{width:100%;max-width:100%;background:#fff;border-radius:0;border:none;overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+.statusbar{background:#1a5c9a;color:white;font-size:12px;padding:8px 20px 6px;display:flex;justify-content:space-between;}
+.header{background:#1a5c9a;color:white;padding:12px 20px 16px;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.header-title{font-size:18px;font-weight:500;}
+.header-sub{font-size:13px;opacity:0.8;}
+.avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:white;cursor:pointer;}
+.badge-od{background:rgba(255,255,255,0.15);border:0.5px solid rgba(255,255,255,0.3);border-radius:20px;padding:4px 10px;font-size:11px;color:white;display:inline-flex;align-items:center;gap:5px;margin-top:6px;}
+.dot{width:6px;height:6px;border-radius:50%;background:#4fc97a;}
+.screen{flex:1;background:#f5f5f3;overflow-y:auto;}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:16px;min-height:500px;}
+.ms-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:48px;height:48px;}
+.ms-grid div{border-radius:2px;}
+.ms-btn{display:flex;align-items:center;gap:10px;justify-content:center;background:#fff;border:1px solid rgba(0,0,0,0.2);border-radius:8px;padding:11px 20px;font-size:14px;font-weight:500;cursor:pointer;color:#111;width:100%;}
+.login-title{font-size:16px;font-weight:500;color:#111;}
+.login-sub{font-size:13px;color:#666;line-height:1.6;}
+.nav-tabs{display:flex;background:#fff;border-bottom:1px solid rgba(0,0,0,0.08);padding:0 12px;}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;color:#666;cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:#1a5c9a;border-bottom-color:#1a5c9a;font-weight:500;}
+.section{padding:12px 16px;}
+.section-label{font-size:11px;font-weight:500;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
+.loading-msg{text-align:center;padding:32px 16px;font-size:13px;color:#666;}
+.pdf-container{width:100%;background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,0.08);overflow:hidden;}
+.pdf-frame{width:100%;height:500px;border:none;}
+.pdf-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f5f5f3;border-top:1px solid rgba(0,0,0,0.08);}
+.pdf-nav-btn{background:#1a5c9a;color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;}
+.pdf-nav-btn:disabled{background:#ccc;cursor:default;}
+.week-label{font-size:13px;font-weight:500;color:#111;}
+.task-item{background:#fff;border-radius:8px;border:1px solid rgba(0,0,0,0.08);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.check-circle{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.check-circle.done{background:#1a5c9a;border-color:#1a5c9a;}
+.check-circle.done::after{content:'';display:block;width:8px;height:5px;border-left:1.5px solid white;border-bottom:1.5px solid white;transform:rotate(-45deg) translateY(-1px);}
+.task-text{flex:1;font-size:13px;color:#111;}
+.task-text.done{text-decoration:line-through;color:#999;}
+.task-urg{font-size:10px;padding:2px 7px;border-radius:20px;}
+.report-form{display:flex;flex-direction:column;gap:10px;}
+.field-label{font-size:12px;color:#666;margin-bottom:4px;display:block;}
+select,textarea{width:100%;background:#fff;border:1px solid rgba(0,0,0,0.2);border-radius:8px;padding:8px 12px;font-size:13px;color:#111;font-family:inherit;}
+textarea{resize:none;height:72px;}
+.photo-btn{border:1px dashed rgba(0,0,0,0.2);border-radius:8px;padding:14px;text-align:center;font-size:12px;color:#666;cursor:pointer;}
+.submit-btn{background:#1a5c9a;color:white;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;width:100%;font-family:inherit;}
+.success-msg{background:#e1f5ee;border-radius:8px;padding:12px;font-size:13px;color:#0f6e56;text-align:center;display:none;}
+.base-tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;}
+.base-tab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid rgba(0,0,0,0.1);background:#fff;cursor:pointer;white-space:nowrap;color:#666;}
+.base-tab.active{background:#1a5c9a;color:white;border-color:#1a5c9a;}
+.meteo-frame{width:100%;height:420px;border:none;border-radius:12px;}
+.webcam-frame{width:100%;height:220px;border:none;border-radius:12px;margin-top:10px;}
+.windguru-btn{display:block;background:#f5a623;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;width:100%;text-align:center;text-decoration:none;margin-top:10px;}
+.meteo-section-label{font-size:11px;font-weight:500;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin:10px 0 6px;}
+.actu-card{background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,0.08);padding:14px;margin-bottom:10px;}
+.actu-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.actu-author{font-size:12px;font-weight:500;color:#1a5c9a;}
+.actu-date{font-size:11px;color:#999;}
+.actu-text{font-size:13px;color:#111;line-height:1.6;margin-bottom:8px;}
+.actu-img{width:100%;border-radius:8px;margin-bottom:8px;object-fit:cover;max-height:160px;}
+.actu-link{font-size:12px;color:#1a5c9a;text-decoration:none;display:block;margin-top:4px;}
+.actu-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;margin-bottom:8px;}
+.fab{position:fixed;bottom:80px;right:16px;width:44px;height:44px;border-radius:50%;background:#1a5c9a;color:white;border:none;font-size:22px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:500;color:#111;margin-bottom:16px;}
+.modal input,.modal textarea,.modal select{width:100%;background:#f5f5f3;border:1px solid rgba(0,0,0,0.1);border-radius:8px;padding:8px 12px;font-size:13px;color:#111;font-family:inherit;margin-bottom:10px;}
+.modal textarea{height:80px;resize:none;}
+.modal-btns{display:flex;gap:8px;}
+.btn-cancel{flex:1;background:transparent;border:1px solid rgba(0,0,0,0.2);border-radius:8px;padding:10px;font-size:13px;cursor:pointer;}
+.btn-publish{flex:1;background:#1a5c9a;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;}
+.pin-screen{display:flex;flex-direction:column;gap:12px;}
+.pin-input{text-align:center;font-size:20px;letter-spacing:8px;}
+.bottom-nav{background:#fff;border-top:1px solid rgba(0,0,0,0.08);display:flex;padding:8px 0 12px;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:#666;cursor:pointer;}
+.bnav-item.active{color:#1a5c9a;}
+.bnav-icon{font-size:18px;}
+.error-card{background:#fcebeb;border-radius:12px;padding:16px;font-size:13px;color:#a32d2d;margin-top:12px;line-height:1.6;}
+.open-btn{display:block;background:#1a5c9a;color:white;border:none;border-radius:8px;padding:10px;font-size:13px;cursor:pointer;width:100%;margin-top:10px;text-align:center;text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-title">8 Milles Nautic</div>
+        <div class="header-sub" id="header-sub">Bienvenue</div>
+      </div>
+      <div class="avatar" id="avatar" onclick="handleLogout()">?</div>
+    </div>
+    <div class="badge-od" id="od-badge" style="display:none;"><span class="dot"></span>Connecté à OneDrive</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="view-login">
+    <div class="login-screen">
+      <div class="ms-grid">
+        <div style="background:#f25022;"></div><div style="background:#7fba00;"></div>
+        <div style="background:#00a4ef;"></div><div style="background:#ffb900;"></div>
+      </div>
+      <div class="login-title">Connexion requise</div>
+      <div class="login-sub">Connecte-toi avec le compte Microsoft 365 de l'organisation.</div>
+      <button class="ms-btn" onclick="handleLogin()">
+        <div class="ms-grid" style="width:18px;height:18px;gap:1px;">
+          <div style="background:#f25022;border-radius:1px;"></div><div style="background:#7fba00;border-radius:1px;"></div>
+          <div style="background:#00a4ef;border-radius:1px;"></div><div style="background:#ffb900;border-radius:1px;"></div>
+        </div>
+        Se connecter avec Microsoft
+      </button>
+      <div id="login-error" style="font-size:12px;color:#e24b4a;display:none;"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="view-app" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div class="nav-tabs">
+      <div class="tab" onclick="switchTab('meteo',this)">Météo</div>
+      <div class="tab" onclick="switchTab('planning',this)">Planning</div>
+      <div class="tab active" onclick="switchTab('actus',this)">Actus</div>
+      <div class="tab" onclick="switchTab('maintenance',this)">Maintenance</div>
+      <div class="tab" onclick="switchTab('signaler',this)">Signaler</div>
+    </div>
+    <div class="screen">
+
+      <!-- PLANNING -->
+      <div id="tab-planning" style="display:none;">
+        <div class="section">
+          <div class="section-label" id="week-label">Semaine en cours</div>
+          <div id="pdf-area"><div class="loading-msg">Chargement du planning...</div></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <button class="pdf-nav-btn" onclick="changeWeek(-1)" style="flex:1;">← Semaine préc.</button>
+            <button class="pdf-nav-btn" onclick="changeWeek(1)" style="flex:1;">Semaine suiv. →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- METEO -->
+      <div id="tab-meteo" style="display:none;">
+        <div class="section">
+          <div class="base-tabs">
+            <div class="base-tab active" onclick="selectBase('granville',this)">Granville</div>
+            <div class="base-tab" onclick="selectBase('breville',this)">Bréville</div>
+            <div class="base-tab" onclick="selectBase('brehal',this)">Bréhal</div>
+            <div class="base-tab" onclick="selectBase('jullouville',this)">Jullouville</div>
+          </div>
+          <div class="meteo-section-label">Webcam</div>
+          <iframe id="webcam-frame" class="webcam-frame" src="https://www.skaping.com/8-milles-nautic/granville/live" allowfullscreen></iframe>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
+            <a id="windguru-btn" class="windguru-btn" href="https://www.windguru.cz/27356" target="_blank">🌬️ Windguru — Granville</a>
+            <a id="meteo-btn" class="windguru-btn" href="https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Granville" target="_blank" style="background:#1a5c9a;">📡 Anémomètre — Granville</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTUS -->
+      <div id="tab-actus">
+        <div class="section">
+          <div class="section-label">Actualités</div>
+          <div id="actu-list"><div class="loading-msg">Chargement des actualités...</div></div>
+        </div>
+      </div>
+
+      <!-- MAINTENANCE -->
+      <div id="tab-maintenance" style="display:none;">
+        <div class="section">
+          <div class="section-label">Tâches du jour</div>
+          <div id="task-list"></div>
+        </div>
+      </div>
+
+      <!-- SIGNALER -->
+      <div id="tab-signaler" style="display:none;">
+        <div class="section">
+          <div class="section-label">Signaler un problème</div>
+          <div class="report-form">
+            <div><label class="field-label">Matériel concerné</label>
+              <select><option>Planche de kite #3</option><option>Barre de contrôle #7</option><option>Wing foil #2</option><option>Combinaison M — #12</option><option>Zodiac Rescue</option><option>Opti #5</option><option>Catamaran #2</option></select>
+            </div>
+            <div><label class="field-label">Type de problème</label>
+              <select><option>Usure / dégradation</option><option>Panne / dysfonctionnement</option><option>Sécurité</option><option>Perte</option><option>Autre</option></select>
+            </div>
+            <div><label class="field-label">Description</label>
+              <textarea placeholder="Décris le problème constaté..."></textarea>
+            </div>
+            <div class="photo-btn">+ Ajouter une photo</div>
+            <button class="submit-btn" onclick="handleSubmit()">Envoyer le signalement</button>
+            <div class="success-msg" id="success-msg">Signalement envoyé !</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="bnav-item" onclick="switchTab('meteo',null,this)"><span class="bnav-icon">🌊</span>Météo</div>
+      <div class="bnav-item" onclick="switchTab('planning',null,this)"><span class="bnav-icon">📅</span>Planning</div>
+      <div class="bnav-item active" onclick="switchTab('actus',null,this)"><span class="bnav-icon">📢</span>Actus</div>
+      <div class="bnav-item" onclick="switchTab('maintenance',null,this)"><span class="bnav-icon">🔧</span>Maintenance</div>
+      <div class="bnav-item" onclick="switchTab('signaler',null,this)"><span class="bnav-icon">🚨</span>Signaler</div>
+    </div>
+  </div>
+</div>
+
+<button class="fab" id="fab-btn" onclick="openPublish()">+</button>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div id="pin-view">
+      <div class="modal-title">Code responsable</div>
+      <div class="pin-screen">
+        <input class="pin-input" type="password" id="pin-input" maxlength="4" placeholder="••••" />
+        <div id="pin-error" style="font-size:12px;color:#e24b4a;display:none;">Code incorrect</div>
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="closePublish()">Annuler</button>
+          <button class="btn-publish" onclick="checkPin()">Valider</button>
+        </div>
+      </div>
+    </div>
+    <div id="publish-view" style="display:none;">
+      <div class="modal-title" id="modal-title">Nouvelle actualité</div>
+      <select id="actu-tag-select">
+        <option value="info">📋 Info générale</option>
+        <option value="urgent">🚨 Urgent</option>
+        <option value="event">📅 Événement</option>
+        <option value="meteo">🌊 Météo / Conditions</option>
+      </select>
+      <input type="text" id="actu-author" placeholder="Ton prénom" />
+      <textarea id="actu-text" placeholder="Message..."></textarea>
+      <input type="text" id="actu-link" placeholder="Lien (optionnel)" />
+      <input type="text" id="actu-img-url" placeholder="URL image (optionnel)" />
+      <select id="actu-duration">
+        <option value="1">Expire dans 1 jour</option>
+        <option value="7" selected>Expire dans 7 jours</option>
+        <option value="30">Expire dans 30 jours</option>
+        <option value="0">Sans limite</option>
+      </select>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closePublish()">Annuler</button>
+        <button class="btn-publish" onclick="publishActu()">Publier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PDF_BASE = "Général/Plannings activités et équipes/PDF plannings Granville";
+const CLIENT_ID = "8c111bb7-7469-4cc8-91d4-9c3df205f25a";
+const TENANT_ID = "213c7921-3ecc-4732-86d2-1d7c1356c132";
+const DRIVE_ID = "b!xE5bJ3ojikSznjFDNDpX_yJNE1wfYudOsAYViw2q5HIV8zorzz-BRYRbhE3dke6R";
+const PDF_FOLDER = "Général/Plannings activités et équipes/PDF plannings Granville";
+
+const msalConfig = {
+  auth: {
+    clientId: CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+    redirectUri: "https://unrivaled-cat-cf4828.netlify.app/",
+  },
+  cache: { cacheLocation: "sessionStorage" }
+};
+
+const loginRequest = { scopes: ["User.Read","Files.Read.All","Sites.Read.All"] };
+
+let msalInstance, accessToken;
+let weekOffset = 0;
+
+const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+let tasks = [
+  {id:1,text:"Vérifier les barres de contrôle #4 et #7",urgency:"Urgent",uc:"#e24b4a",ub:"#fcebeb",done:false},
+  {id:2,text:"Rincer les combinaisons du groupe matin",urgency:"Normal",uc:"#185fa5",ub:"#e6f1fb",done:false},
+  {id:3,text:"Contrôle visuel lignes kite #3",urgency:"Normal",uc:"#185fa5",ub:"#e6f1fb",done:true},
+  {id:4,text:"Recharger radio Rescue",urgency:"Important",uc:"#854f0b",ub:"#faeeda",done:false},
+  {id:5,text:"Karcher optis après séance",urgency:"Normal",uc:"#185fa5",ub:"#e6f1fb",done:false},
+];
+
+window.onload = async () => {
+  try {
+    msalInstance = new msal.PublicClientApplication(msalConfig);
+    await msalInstance.initialize();
+    const resp = await msalInstance.handleRedirectPromise();
+    if (resp && resp.accessToken) {
+      accessToken = resp.accessToken;
+      showApp();
+    }
+  } catch(e) { console.error(e); }
+};
+
+async function handleLogin() {
+  try { await msalInstance.loginRedirect(loginRequest); }
+  catch(e) { document.getElementById('login-error').textContent = "Erreur : "+e.message; document.getElementById('login-error').style.display='block'; }
+}
+
+function handleLogout() {
+  if(confirm("Se déconnecter ?")) msalInstance.logoutRedirect();
+}
+
+function showApp() {
+  document.getElementById('view-login').style.display = 'none';
+  document.getElementById('od-badge').style.display = 'inline-flex';
+  document.getElementById('header-sub').textContent = "Planning de la semaine";
+  const app = document.getElementById('view-app');
+  app.style.display = 'flex';
+  loadPDF();
+}
+
+async function graphGet(url) {
+  const r = await fetch(url, {headers:{Authorization:"Bearer "+accessToken}});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+function getWeekBounds(offset) {
+  const today = new Date();
+  today.setDate(today.getDate() + offset * 7);
+  const day = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return { monday, sunday };
+}
+
+function formatWeekLabel(monday, sunday) {
+  const d1 = monday.getDate();
+  const d2 = sunday.getDate();
+  const m1 = MONTHS[monday.getMonth()];
+  const m2 = MONTHS[sunday.getMonth()];
+  const y = sunday.getFullYear();
+  if (monday.getMonth() === sunday.getMonth()) return `Du ${d1} au ${d2} ${m1} ${y}`;
+  return `Du ${d1} ${m1} au ${d2} ${m2} ${y}`;
+}
+
+async function loadPDF() {
+  const area = document.getElementById('pdf-area');
+  area.innerHTML = '<div class="loading-msg">Recherche du planning...</div>';
+
+  const { monday, sunday } = getWeekBounds(weekOffset);
+  const label = formatWeekLabel(monday, sunday);
+  document.getElementById('week-label').textContent = label;
+
+  try {
+    // Lister les fichiers du dossier PDF
+    // Chemin : PDF plannings Granville / 2026 / Mois / fichier.pdf
+    const year = monday.getFullYear();
+    const monthName = MONTHS[monday.getMonth()];
+    const monthCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    const folderPath = `${PDF_BASE}/2026/${monthCap}`;
+    const encodedPath = folderPath.split('/').map(encodeURIComponent).join('/');
+    const result = await graphGet(`https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/root:/${encodedPath}:/children`);
+    const files = result.value;
+
+    const d1 = monday.getDate();
+    const m1 = MONTHS[monday.getMonth()];
+
+    let pdfFile = files.find(f => {
+      const n = f.name.toLowerCase();
+      // Chercher le jour exact avec espace ou "au" autour pour éviter 6 dans 26
+      const d1str = String(d1);
+      const hasDay = new RegExp('(^|\\s|u\\s)' + d1str + '(\\s|$|\\s)').test(n) || n.startsWith('du ' + d1str + ' ') || n.includes(' ' + d1str + ' ');
+      return hasDay && n.endsWith('.pdf');
+    });
+
+    if (!pdfFile) {
+      area.innerHTML = `<div class="error-card">Planning PDF non trouvé pour la semaine du ${label}.<br><br>Fichiers disponibles :<br>${files.filter(f=>f.name.endsWith('.pdf')).map(f=>'• '+f.name).join('<br>')}</div>`;
+      return;
+    }
+
+    // Obtenir l'URL de téléchargement et l'aperçu
+    const fileInfo = await graphGet(`https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/items/${pdfFile.id}`);
+    const downloadUrl = fileInfo['@microsoft.graph.downloadUrl'];
+
+    // Obtenir l'URL d'aperçu SharePoint
+    const previewResp = await fetch(`https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/items/${pdfFile.id}/preview`, {
+      method: "POST",
+      headers: {Authorization: "Bearer "+accessToken, "Content-Type": "application/json"},
+      body: "{}"
+    });
+    const previewData = await previewResp.json();
+    const previewUrl = previewData.getUrl;
+
+    area.innerHTML = `
+      <div class="pdf-container">
+        <iframe class="pdf-frame" src="${previewUrl}" title="Planning ${label}" allowfullscreen></iframe>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <a href="${previewUrl}" target="_blank" class="open-btn" style="flex:1;">Plein écran</a>
+        <a href="${downloadUrl}" target="_blank" class="open-btn" style="flex:1;background:#0f6e56;">Télécharger</a>
+      </div>
+    `;
+
+  } catch(e) {
+    console.error(e);
+    area.innerHTML = `<div class="error-card">Erreur de chargement : ${e.message}</div>`;
+  }
+}
+
+function changeWeek(dir) {
+  weekOffset += dir;
+  loadPDF();
+}
+
+function renderTasks() {
+  document.getElementById('task-list').innerHTML = tasks.map(t => `
+    <div class="task-item">
+      <div class="check-circle ${t.done?'done':''}" onclick="toggleTask(${t.id})"></div>
+      <span class="task-text ${t.done?'done':''}">${t.text}</span>
+      <span class="task-urg" style="background:${t.ub};color:${t.uc};">${t.urgency}</span>
+    </div>`).join('');
+}
+
+function toggleTask(id) { tasks=tasks.map(t=>t.id===id?{...t,done:!t.done}:t); renderTasks(); }
+
+
+// ─── MÉTÉO ─────────────────────────────────────────────────
+const BASES = {
+  granville:  { meteo: 'https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Granville',  webcam: 'https://www.skaping.com/8-milles-nautic/granville/live',    windguru: 'https://www.windguru.cz/27356',  label: 'Granville' },
+  breville:   { meteo: 'https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Breville',   webcam: 'https://www.skaping.com/8-milles-nautic/breville/video',    windguru: 'https://www.windguru.cz/48405',  label: 'Bréville' },
+  brehal:     { meteo: 'https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Brehal',     webcam: 'https://www.skaping.com/8-milles-nautic/brehal/live',       windguru: 'https://www.windguru.cz/500900', label: 'Bréhal' },
+  jullouville:{ meteo: 'https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Jullouville',webcam: 'https://www.skaping.com/8-milles-nautic/jullouville/video',  windguru: 'https://www.windguru.cz/48407',  label: 'Jullouville' },
+};
+
+function selectBase(key, el) {
+  document.querySelectorAll('.base-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const base = BASES[key];
+  document.getElementById('webcam-frame').src = base.webcam;
+  const windguru = document.getElementById('windguru-btn');
+  windguru.href = base.windguru;
+  windguru.textContent = '🌬️ Windguru — ' + base.label;
+  const meteo = document.getElementById('meteo-btn');
+  meteo.href = base.meteo;
+  meteo.textContent = '📡 Anémomètre — ' + base.label;
+}
+
+// ─── ACTUS ─────────────────────────────────────────────────
+const PIN = "1234"; // À changer !
+const ACTU_FILE_PATH = "Général/Plannings activités et équipes/actualites.json";
+let actus = [];
+let pinValidated = false;
+
+const TAG_STYLES = {
+  info:   {bg:"#e6f1fb", color:"#185fa5", label:"Info"},
+  urgent: {bg:"#fcebeb", color:"#a32d2d", label:"Urgent"},
+  event:  {bg:"#eeedfe", color:"#534ab7", label:"Événement"},
+  meteo:  {bg:"#e1f5ee", color:"#0f6e56", label:"Météo"},
+};
+
+async function loadActus() {
+  try {
+    const encodedPath = ACTU_FILE_PATH.split('/').map(encodeURIComponent).join('/');
+    const data = await graphGet(`https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/root:/${encodedPath}:/content`);
+    actus = Array.isArray(data) ? data : [];
+  } catch(e) {
+    actus = [];
+  }
+  renderActus();
+}
+
+function renderActus() {
+  const list = document.getElementById('actu-list');
+  if (!list) return;
+  const now = new Date();
+  const visible = actus.filter(a => !a.expiry || new Date(a.expiry) > now);
+  if (visible.length === 0) {
+    list.innerHTML = '<div class="loading-msg">Aucune actualité pour le moment.</div>';
+    return;
+  }
+  list.innerHTML = [...visible].reverse().map(a => {
+    const tag = TAG_STYLES[a.tag] || TAG_STYLES.info;
+    const expText = a.expiry ? `Expire le ${new Date(a.expiry).toLocaleDateString('fr-FR')}` : 'Sans limite';
+    return `<div class="actu-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="actu-tag" style="background:${tag.bg};color:${tag.color};">${tag.label}</span>
+        ${pinValidated ? `<div style="display:flex;gap:8px;">
+          <button onclick="editActu(${a.id})" style="background:none;border:none;cursor:pointer;font-size:14px;color:#666;">✏️</button>
+          <button onclick="deleteActu(${a.id})" style="background:none;border:none;cursor:pointer;font-size:14px;color:#e24b4a;">🗑️</button>
+        </div>` : ''}
+      </div>
+      <div class="actu-header">
+        <span class="actu-author">${a.author}</span>
+        <span class="actu-date">${a.date}</span>
+      </div>
+      ${a.img ? `<img class="actu-img" src="${a.img}" alt=""/>` : ''}
+      <div class="actu-text">${a.text}</div>
+      ${a.link ? `<a class="actu-link" href="${a.link}" target="_blank">🔗 ${a.link}</a>` : ''}
+      <div style="font-size:10px;color:#bbb;margin-top:6px;">${expText}</div>
+    </div>`;
+  }).join('');
+}
+
+async function saveActus() {
+  try {
+    const encodedPath = ACTU_FILE_PATH.split('/').map(encodeURIComponent).join('/');
+    await fetch(`https://graph.microsoft.com/v1.0/drives/${DRIVE_ID}/root:/${encodedPath}:/content`, {
+      method: "PUT",
+      headers: {Authorization: "Bearer "+accessToken, "Content-Type": "application/json"},
+      body: JSON.stringify(actus)
+    });
+  } catch(e) { console.error("Erreur sauvegarde actus:", e); }
+}
+
+function openPublish() {
+  document.getElementById('modal-overlay').style.display = 'flex';
+  document.getElementById('pin-view').style.display = pinValidated ? 'none' : 'block';
+  document.getElementById('publish-view').style.display = pinValidated ? 'block' : 'none';
+}
+
+function closePublish() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closePublish();
+}
+
+function checkPin() {
+  const val = document.getElementById('pin-input').value;
+  if (val === PIN) {
+    pinValidated = true;
+    document.getElementById('pin-view').style.display = 'none';
+    document.getElementById('publish-view').style.display = 'block';
+    document.getElementById('pin-error').style.display = 'none';
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+  }
+}
+
+let editingId = null;
+
+async function publishActu() {
+  const text = document.getElementById('actu-text').value.trim();
+  const author = document.getElementById('actu-author').value.trim();
+  if (!text || !author) { alert("Prénom et message obligatoires !"); return; }
+  const now = new Date();
+  const date = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const days = parseInt(document.getElementById('actu-duration').value);
+  let expiry = null;
+  if (days > 0) {
+    const exp = new Date();
+    exp.setDate(exp.getDate() + days);
+    expiry = exp.toISOString();
+  }
+  if (editingId !== null) {
+    actus = actus.map(a => a.id === editingId ? {
+      ...a,
+      tag: document.getElementById('actu-tag-select').value,
+      author,
+      text,
+      link: document.getElementById('actu-link').value.trim(),
+      img: document.getElementById('actu-img-url').value.trim(),
+      expiry
+    } : a);
+    editingId = null;
+  } else {
+    actus.push({
+      id: Date.now(),
+      tag: document.getElementById('actu-tag-select').value,
+      author, text,
+      link: document.getElementById('actu-link').value.trim(),
+      img: document.getElementById('actu-img-url').value.trim(),
+      date, expiry
+    });
+  }
+  await saveActus();
+  renderActus();
+  closePublish();
+  ['actu-text','actu-author','actu-link','actu-img-url'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('modal-title').textContent = 'Nouvelle actualité';
+}
+
+function deleteActu(id) {
+  if (!confirm("Supprimer cette actualité ?")) return;
+  actus = actus.filter(a => a.id !== id);
+  saveActus();
+  renderActus();
+}
+
+function editActu(id) {
+  const a = actus.find(x => x.id === id);
+  if (!a) return;
+  editingId = id;
+  document.getElementById('actu-tag-select').value = a.tag || 'info';
+  document.getElementById('actu-author').value = a.author;
+  document.getElementById('actu-text').value = a.text;
+  document.getElementById('actu-link').value = a.link || '';
+  document.getElementById('actu-img-url').value = a.img || '';
+  document.getElementById("modal-title").textContent = "Modifier l'actualité";
+  document.getElementById('modal-overlay').style.display = 'flex';
+  document.getElementById('pin-view').style.display = 'none';
+  document.getElementById('publish-view').style.display = 'block';
+}
+
+function handleSubmit() {
+  const msg=document.getElementById('success-msg');
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',3000);
+}
+
+function switchTab(tab,tabEl,navEl) {
+  const fab = document.getElementById('fab-btn');
+  if (fab) fab.style.display = tab === 'actus' ? 'flex' : 'none';
+  if (tab === 'actus') loadActus();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(t=>t.classList.remove('active'));
+  if(tabEl) tabEl.classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  if(!tabEl&&!navEl){
+    const idx=['planning','maintenance','signaler'].indexOf(tab);
+    document.querySelectorAll('.tab')[idx]?.classList.add('active');
+    document.querySelectorAll('.bnav-item')[idx]?.classList.add('active');
+  }
+  ['meteo','planning','actus','maintenance','signaler'].forEach(v=>{
+    const el=document.getElementById('tab-'+v); if(el) el.style.display=v===tab?'block':'none';
+  });
+  if(tab==='maintenance') renderTasks();
+}
+</script>
+</body>
+</html>
