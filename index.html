@@ -156,11 +156,10 @@ textarea{resize:none;height:72px;}
             <div class="base-tab" onclick="selectBase('brehal',this)">Bréhal</div>
             <div class="base-tab" onclick="selectBase('jullouville',this)">Jullouville</div>
           </div>
-          <div class="meteo-section-label">Webcam</div>
-          <iframe id="webcam-frame" class="webcam-frame" src="https://www.skaping.com/8-milles-nautic/granville/live" allowfullscreen></iframe>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">
             <a id="windguru-btn" class="windguru-btn" href="https://www.windguru.cz/27356" target="_blank">🌬️ Windguru — Granville</a>
             <a id="meteo-btn" class="windguru-btn" href="https://www.meteodata.fr/tableau-de-bord/v2/wind-sports/Granville" target="_blank" style="background:#1a5c9a;">📡 Anémomètre — Granville</a>
+            <a id="webcam-btn" class="windguru-btn" href="https://www.skaping.com/8-milles-nautic/granville/live" target="_blank" style="background:#0f6e56;">📷 Webcam — Granville</a>
           </div>
         </div>
       </div>
@@ -265,7 +264,7 @@ const msalConfig = {
   auth: {
     clientId: CLIENT_ID,
     authority: `https://login.microsoftonline.com/${TENANT_ID}`,
-    redirectUri: "https://unrivaled-cat-cf4828.netlify.app/",
+    redirectUri: "https://blepoitt-bot.github.io/8milles-nautic/",
   },
   cache: { cacheLocation: "sessionStorage" }
 };
@@ -435,7 +434,8 @@ function selectBase(key, el) {
   document.querySelectorAll('.base-tab').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
   const base = BASES[key];
-  document.getElementById('webcam-frame').src = base.webcam;
+  document.getElementById('webcam-btn').href = base.webcam;
+  document.getElementById('webcam-btn').textContent = '📷 Webcam — ' + base.label;
   const windguru = document.getElementById('windguru-btn');
   windguru.href = base.windguru;
   windguru.textContent = '🌬️ Windguru — ' + base.label;
